@@ -1,8 +1,7 @@
 package ru.javaops.masterjava.matrix;
 
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 /**
  * gkislin
@@ -15,6 +14,38 @@ public class MatrixUtil {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
 
+        final ExecutorService service = Executors.newFixedThreadPool(8);
+        final CompletionService<int[]> completionService = new ExecutorCompletionService<>(service);
+        final Future<int[]> futures[] = new Future[matrixSize];
+
+        for (int i = 0; i < matrixSize; i++) {
+            int finalI = i;
+            futures[i] = completionService.submit(() -> {
+                int result[] = new int[matrixSize];
+                final int thatColumn[] = new int[matrixSize];
+                for (int k = 0; k < matrixSize; k++) {
+                    thatColumn[k] = matrixB[k][finalI];
+                }
+
+                for (int j = 0; j < matrixSize; j++) {
+                    int tt[] = matrixA[j];
+                    int summand = 0;
+                    for (int k = 0; k < matrixSize; k++) {
+                        summand += tt[k] * thatColumn[k];
+                    }
+                    result[j] = summand;
+                }
+                return result;
+            });
+        }
+
+        for (int i = 0; i < matrixSize; i++) {
+            int it[] = futures[i].get();
+            for (int j = 0; j < matrixSize; j++) {
+                matrixC[j][i] = it[j];
+            }
+
+        }
         return matrixC;
     }
 
@@ -23,14 +54,22 @@ public class MatrixUtil {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
 
-        for (int i = 0; i < matrixSize; i++) {
-            for (int j = 0; j < matrixSize; j++) {
-                int sum = 0;
+        final int thatColumn[] = new int[matrixSize];
+        try {
+            for (int i = 0; ; i++) {
                 for (int k = 0; k < matrixSize; k++) {
-                    sum += matrixA[i][k] * matrixB[k][j];
+                    thatColumn[k] = matrixB[k][i];
                 }
-                matrixC[i][j] = sum;
+                for (int j = 0; j < matrixSize; j++) {
+                    int tt[] = matrixA[j];
+                    int summand = 0;
+                    for (int k = 0; k < matrixSize; k++) {
+                        summand += tt[k] * thatColumn[k];
+                    }
+                    matrixC[j][i] = summand;
+                }
             }
+        } catch (IndexOutOfBoundsException ignored) {
         }
         return matrixC;
     }
