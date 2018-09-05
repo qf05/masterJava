@@ -3,6 +3,7 @@ package ru.javaops.masterjava.matrix;
 import java.util.Random;
 import java.util.concurrent.*;
 
+
 /**
  * gkislin
  * 03.07.2016
@@ -14,8 +15,7 @@ public class MatrixUtil {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
 
-        final ExecutorService service = Executors.newFixedThreadPool(8);
-        final CompletionService<int[]> completionService = new ExecutorCompletionService<>(service);
+        final CompletionService<int[]> completionService = new ExecutorCompletionService<>(executor);
         final Future<int[]> futures[] = new Future[matrixSize];
 
         for (int i = 0; i < matrixSize; i++) {
