@@ -20,6 +20,7 @@ public class JaxbParser {
     protected JaxbMarshaller jaxbMarshaller;
     protected JaxbUnmarshaller jaxbUnmarshaller;
     protected Schema schema;
+    protected JAXBContext ctx;
 
     public JaxbParser(Class... classesToBeBound) {
         try {
@@ -41,7 +42,20 @@ public class JaxbParser {
     private void init(JAXBContext ctx) throws JAXBException {
         jaxbMarshaller = new JaxbMarshaller(ctx);
         jaxbUnmarshaller = new JaxbUnmarshaller(ctx);
+        this.ctx = ctx;
     }
+
+        public JaxbUnmarshaller createUnmarshaller() {
+            try {
+                JaxbUnmarshaller unmarshaller = new JaxbUnmarshaller(ctx);
+                if (schema != null) {
+                    unmarshaller.setSchema(schema);
+                }
+                return unmarshaller;
+            } catch (JAXBException e) {
+                throw new IllegalStateException(e);
+            }
+        }
 
     // Unmarshaller
     public <T> T unmarshal(InputStream is) throws JAXBException {
