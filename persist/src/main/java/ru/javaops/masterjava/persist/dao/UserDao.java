@@ -20,10 +20,7 @@ public abstract class UserDao implements AbstractDao {
     @Transaction
     public int getIdSkipChank(int skip) {
         int id = getNextVal();
-        for (int i = 0; i < skip; i++) {
-            getNextVal();
-        }
-//        DBIProvider.getDBI().useHandle(h -> h.execute("ALTER SEQUENCE user_seq RESTART WITH " + (id + skip)));
+        DBIProvider.getDBI().useHandle(h -> h.execute("SELECT setval('user_seq', " + (id + skip) + ")"));
         return id;
     }
 
