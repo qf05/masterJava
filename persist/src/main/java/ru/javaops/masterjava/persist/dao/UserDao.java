@@ -1,15 +1,31 @@
 package ru.javaops.masterjava.persist.dao;
 
 import com.bertoncelj.jdbi.entitymapper.EntityMapperFactory;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.skife.jdbi.v2.sqlobject.*;
 import org.skife.jdbi.v2.sqlobject.customizers.BatchChunkSize;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
+import ru.javaops.masterjava.persist.DBIProvider;
 import ru.javaops.masterjava.persist.model.User;
 
 import java.util.List;
 
 @RegisterMapperFactory(EntityMapperFactory.class)
 public abstract class UserDao implements AbstractDao {
+
+    @SqlQuery("SELECT nextval('user_seq')")
+    abstract int getNextVal();
+
+    @Transaction
+    public int getIdSkipChank(int skip) {
+        int id = getNextVal();
+        for (int i = 0; i < skip; i++) {
+            getNextVal();
+        }
+//        DBIProvider.getDBI().useHandle(h -> h.execute("ALTER SEQUENCE user_seq RESTART WITH " + (id + skip)));
+        return id;
+    }
 
     public User insert(User user) {
         if (user.isNew()) {
@@ -38,4 +54,7 @@ public abstract class UserDao implements AbstractDao {
 
     @SqlBatch("insert into users (full_name, email, flag) values (:fullName, :email, CAST(:flag AS USER_FLAG)) ON CONFLICT DO NOTHING")
     public abstract int[] insetBatch(@BindBean List<User> users, @BatchChunkSize int chunkSize);
+
+    @SqlBatch("insert into users (full_name, email, flag) values (:fullName, :email, CAST(:flag AS USER_FLAG)) ON CONFLICT DO NOTHING")
+    public abstract int[] insetBatch2(@BindBean List<User> users);
 }

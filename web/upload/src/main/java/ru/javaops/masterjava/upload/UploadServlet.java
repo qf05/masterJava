@@ -1,7 +1,7 @@
 package ru.javaops.masterjava.upload;
 
 import org.thymeleaf.context.WebContext;
-import ru.javaops.masterjava.persist.model.User;
+import ru.javaops.masterjava.model.UsersFail;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -40,8 +40,8 @@ public class UploadServlet extends HttpServlet {
                 throw new IllegalStateException("Upload file have not been selected");
             }
             try (InputStream is = filePart.getInputStream()) {
-                List<User> users = userProcessor.process(is, sizeBunch);
-                webContext.setVariable("users", users);
+                List<UsersFail> result = userProcessor.process(is, sizeBunch);
+                webContext.setVariable("users", result);
                 engine.process("result", webContext, resp.getWriter());
             }
         } catch (Exception e) {
