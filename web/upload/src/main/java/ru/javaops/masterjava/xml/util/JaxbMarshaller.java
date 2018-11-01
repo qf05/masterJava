@@ -39,5 +39,4 @@ public class JaxbMarshaller {
     public void marshal(Object instance, Writer writer) throws JAXBException {
         marshaller.marshal(instance, writer);
     }
-
 }
