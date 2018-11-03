@@ -29,15 +29,15 @@ public abstract class UserDao implements AbstractDao {
     @Transaction
     public int getSeqAndSkip(int step) {
         int id = getNextVal();
-        DBIProvider.getDBI().useHandle(h -> h.execute("ALTER SEQUENCE user_seq RESTART WITH " + (id + step)));
+        DBIProvider.getDBI().useHandle(h -> h.execute("SELECT setval('user_seq', " + (id + step - 1) + ")"));
         return id;
     }
 
-    @SqlUpdate("INSERT INTO users (full_name, email, flag) VALUES (:fullName, :email, CAST(:flag AS USER_FLAG)) ")
+    @SqlUpdate("INSERT INTO users (full_name, email, flag, city_ref) VALUES (:fullName, :email, CAST(:flag AS USER_FLAG), :cityRef) ")
     @GetGeneratedKeys
     abstract int insertGeneratedId(@BindBean User user);
 
-    @SqlUpdate("INSERT INTO users (id, full_name, email, flag) VALUES (:id, :fullName, :email, CAST(:flag AS USER_FLAG)) ")
+    @SqlUpdate("INSERT INTO users (id, full_name, email, flag, city_ref) VALUES (:id, :fullName, :email, CAST(:flag AS USER_FLAG), :cityRef) ")
     abstract void insertWitId(@BindBean User user);
 
     @SqlQuery("SELECT * FROM users ORDER BY full_name, email LIMIT :it")
@@ -49,7 +49,7 @@ public abstract class UserDao implements AbstractDao {
     public abstract void clean();
 
     //    https://habrahabr.ru/post/264281/
-    @SqlBatch("INSERT INTO users (id, full_name, email, flag) VALUES (:id, :fullName, :email, CAST(:flag AS USER_FLAG))" +
+    @SqlBatch("INSERT INTO users (id, full_name, email, flag, city_ref) VALUES (:id, :fullName, :email, CAST(:flag AS USER_FLAG), :cityRef)" +
             "ON CONFLICT DO NOTHING")
 //            "ON CONFLICT (email) DO UPDATE SET full_name=:fullName, flag=CAST(:flag AS USER_FLAG)")
     public abstract int[] insertBatch(@BindBean List<User> users, @BatchChunkSize int chunkSize);
